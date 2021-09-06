@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TelegramNoteBot
 {
-    interface IUserRepository
+    public interface IUserRepository
     {
         User AddUser(long Id);
         User UpdateUser(long Id, UserState state);

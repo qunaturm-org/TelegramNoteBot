@@ -11,12 +11,12 @@ using TelegramNoteBot;
 
 namespace Telegram.Bot.Examples.Echo
 {
-    public class Handlers
+    public class HandlersToDelete
     {
         private NoteRepository _noteRepository;
         private ConcurrentDictionary<long, UserState> _userInfo;
         
-        public Handlers(NoteRepository noteRepository)
+        public HandlersToDelete(NoteRepository noteRepository)
         {
             _noteRepository = noteRepository;
             _userInfo = new ConcurrentDictionary<long, UserState>();
@@ -62,7 +62,7 @@ namespace Telegram.Bot.Examples.Echo
 
         private async Task BotOnMessageReceived(ITelegramBotClient botClient, Message message)
         {
-            UserState value;
+            User user = _userRepository; 
             if (_userInfo.GetOrAdd(message.From.Id, UserState.Command).Equals(UserState.Command))
             {
                 _userInfo.AddOrUpdate(message.From.Id, UserState.Command, (x, y) => UserState.Command);

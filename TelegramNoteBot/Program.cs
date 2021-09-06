@@ -2,6 +2,8 @@
 using MongoDB.Driver;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Examples.Echo;
+using System.Threading;
+using System;
 
 namespace TelegramNoteBot
 {
@@ -21,7 +23,7 @@ namespace TelegramNoteBot
             IMongoCollection<User> usersCollection = database.GetCollection<User>("Users");
             NoteRepository noteRepository = new NoteRepository(notesCollection);
 
-            var handlers = new Handlers(noteRepository);
+            var handlers = new HandlersToDelete(noteRepository);
             client.StartReceiving(new DefaultUpdateHandler(handlers.HandleUpdateAsync, handlers.HandleErrorAsync),
                    cts.Token);
 
