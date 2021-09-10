@@ -1,4 +1,6 @@
-﻿namespace TelegramNoteBot
+﻿using System.Collections.Generic;
+
+namespace TelegramNoteBot
 {
     public interface INoteRepository
     {

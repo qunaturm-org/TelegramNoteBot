@@ -9,9 +9,9 @@ namespace TelegramNoteBot.Handlers
 {
     public class MessageProcessing : IMessageProcessing
     {
-        private readonly NoteRepository _noteRepository;
-        private readonly UserRepository _userRepository;
-        public MessageProcessing(NoteRepository noteRepository, UserRepository userRepository)
+        private readonly INoteRepository _noteRepository;
+        private readonly IUserRepository _userRepository;
+        public MessageProcessing(INoteRepository noteRepository, IUserRepository userRepository)
         {
             _noteRepository = noteRepository;
             _userRepository = userRepository;
@@ -58,6 +58,17 @@ namespace TelegramNoteBot.Handlers
                                                         replyMarkup: new ReplyKeyboardRemove());
         }
 
+        public async Task<Message> GetAllNotes(ITelegramBotClient botClient, Message message)
+        {
+            var notes = _noteRepository.GetAllNotes(message.From.Id);
+            if (!notes.Any())
+            {
+                return await botClient.SendTextMessageAsync(message.Chat.Id, "У вас ещё нет сохранённых заметок");
+            }
+            var formatedNotes = notes.Select(note =>
+                $"Text: {note.Text}\n");
+            return await botClient.SendTextMessageAsync(message.Chat.Id, string.Join("----------\n", formatedNotes));
+        }
 
         public Task<Message> DeleteNoteProcessing(ITelegramBotClient botClient, Message message)
         {

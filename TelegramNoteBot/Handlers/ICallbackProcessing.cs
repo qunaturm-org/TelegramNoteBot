@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TelegramNoteBot.Handlers
 {
-    public interface IButtonProcessing
+    public interface ICallbackProcessing
     {
     }
 }

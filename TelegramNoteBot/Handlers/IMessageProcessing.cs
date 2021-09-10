@@ -18,6 +18,6 @@ namespace TelegramNoteBot.Handlers
         Task<Message> Usage(ITelegramBotClient botClient, Message message);
         Task<Message> AddNoteProcessing(ITelegramBotClient botClient, Message message);
         Task<Message> DeleteNoteProcessing(ITelegramBotClient botClient, Message message);
-
+        Task<Message> GetAllNotes(ITelegramBotClient botClient, Message message);
     }
 }

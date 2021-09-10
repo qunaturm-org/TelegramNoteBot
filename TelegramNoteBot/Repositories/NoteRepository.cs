@@ -4,7 +4,7 @@ using MongoDB.Driver;
 
 namespace TelegramNoteBot
 {
-    public class NoteRepository
+    public class NoteRepository : INoteRepository
     {
         private IMongoCollection<Note> _notesCollection;
         public NoteRepository(IMongoCollection<Note> notesCollection)

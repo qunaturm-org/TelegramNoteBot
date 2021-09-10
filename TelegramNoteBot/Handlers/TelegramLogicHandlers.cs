@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TelegramNoteBot.Handlers
 {
@@ -59,6 +58,11 @@ namespace TelegramNoteBot.Handlers
                 return;
 
             User user = _userRepository.GetUser(message.From.Id);
+            if (user == null)
+            {
+                _userRepository.AddUser(message.From.Id);
+                user = _userRepository.GetUser(message.From.Id);
+            }
             Task<Message> action;
             switch (user.State)
             {
@@ -89,12 +93,13 @@ namespace TelegramNoteBot.Handlers
 
         private async Task BotOnCallbackQueryReceived(ITelegramBotClient botClient, CallbackQuery callbackQuery)
         {
+            User user = _userRepository.GetUser(callbackQuery.Message.From.Id);
             var action = (callbackQuery.Data) switch
             {
                 "functionsCallback" => TellMeAboutFunctional(),
                 "createNotesCallback" => CreateNewNote(),
-                "showNotesCallback" => GetNotes(),
-                "deteteNote" => DeleteNote()
+                "showNotesCallback" => _messageProcessing.GetAllNotes(botClient, callbackQuery.Message),
+                "deteteNote" => _messageProcessing.DeleteNoteProcessing(botClient, callbackQuery.Message)
             };
 
             await action;
@@ -106,42 +111,10 @@ namespace TelegramNoteBot.Handlers
 
             async Task CreateNewNote()
             {
-                _userInfo.AddOrUpdate(callbackQuery.Message.Chat.Id, UserState.Note, (x, y) => UserState.Note);
+                _userRepository.UpdateUser(callbackQuery.Message.Chat.Id, UserState.Note);
                 await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Введите свою заметку", replyMarkup: new ForceReplyMarkup { Selective = true });
 
             }
-
-            async Task<Message> GetNotes()
-            {
-                UserState value = UserState.Command;
-                var notes = _noteRepository.GetAllNotes(callbackQuery.Message.Chat.Id);
-                if (!notes.Any())
-                {
-                    return await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "У вас ещё нет сохранённых заметок");
-                }
-                var formatedNotes = notes.Select(note =>
-                    $"Text: {note.Text}\n");
-                var response = string.Join("----------\n", formatedNotes);
-                return await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, response);
-            }
-
-            async Task<Message> DeleteNote()
-            {
-                UserState value = UserState.Command;
-                int counter = 1;
-                if (_userInfo.TryGetValue(callbackQuery.Message.Chat.Id, out value))
-                {
-                    var notes = _noteRepository.GetAllNotes(callbackQuery.Message.Chat.Id);
-                    botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Введите номер заметки, которую хотите удалить");
-                    var formatedNotes = notes.Select(note =>
-                        $"Номер заметки: {counter++}\n Text: {note.Text}\n");
-                    var response = string.Join("----------\n", formatedNotes);
-                    await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, response, replyMarkup: new ForceReplyMarkup { Selective = true });
-                    _userInfo.AddOrUpdate(callbackQuery.Message.Chat.Id, UserState.Note, (x, y) => UserState.InputnNoteIdToDelete);
-                }
-                return await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Чтобы что-то удалить надо сначала это что-то сохранить");
-            }
-
         }
     }
 }
