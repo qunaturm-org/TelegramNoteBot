@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -15,6 +16,46 @@ namespace TelegramNoteBot.Handlers
         {
             _noteRepository = noteRepository;
             _userRepository = userRepository;
+        }
+
+        public async Task Processing(ITelegramBotClient botClient, Message message)
+        {
+            Console.WriteLine($"Receive message type: {message.Type}");
+            if (message.Type != MessageType.Text)
+                return;
+
+            User user = _userRepository.GetUser(message.From.Id);
+            if (user == null)
+            {
+                _userRepository.AddUser(message.From.Id);
+                user = _userRepository.GetUser(message.From.Id);
+            }
+            Task<Message> action;
+            switch (user.State)
+            {
+                case UserState.AddNote:
+                    {
+                        action = AddNoteProcessing(botClient, message);
+                        break;
+                    }
+
+                case UserState.DeleteNote:
+                    {
+                        action = DeleteNoteProcessing(botClient, message);
+                        break;
+                    }
+
+                default:
+                    {
+                        action = (message.Text.Split(' ').First()) switch
+                        {
+                            "/inline" => SendInlineKeyboard(botClient, message),
+                            _ => Usage(botClient, message)
+                        };
+                        break;
+                    }
+            }
+            await action;
         }
         public Task<Message> AddNoteProcessing(ITelegramBotClient botClient, Message message)
         {
@@ -58,33 +99,11 @@ namespace TelegramNoteBot.Handlers
                                                         replyMarkup: new ReplyKeyboardRemove());
         }
 
-        public async Task<Message> GetAllNotes(ITelegramBotClient botClient, Message message)
-        {
-            var notes = _noteRepository.GetAllNotes(message.From.Id);
-            if (!notes.Any())
-            {
-                return await botClient.SendTextMessageAsync(message.Chat.Id, "У вас ещё нет сохранённых заметок");
-            }
-            var formatedNotes = notes.Select(note =>
-                $"Text: {note.Text}\n");
-            return await botClient.SendTextMessageAsync(message.Chat.Id, string.Join("----------\n", formatedNotes));
-        }
-
         public Task<Message> DeleteNoteProcessing(ITelegramBotClient botClient, Message message)
         {
-            UserState value = UserState.Command;
-            int counter = 1;
-            if (_userRepository.GetUser(message.Chat.Id).State == UserState.InputnNoteIdToDelete)
-            {
-                var notes = _noteRepository.GetAllNotes(message.Chat.Id);
-                botClient.SendTextMessageAsync(message.Chat.Id, "Введите номер заметки, которую хотите удалить");
-                var formatedNotes = notes.Select(note =>
-                    $"Номер заметки: {counter++}\n Text: {note.Text}\n");
-                var response = string.Join("----------\n", formatedNotes);
-                botClient.SendTextMessageAsync(message.Chat.Id, response, replyMarkup: new ForceReplyMarkup { Selective = true });
-                _userRepository.UpdateUser(message.From.Id, UserState.InputnNoteIdToDelete);
-            }
-            return botClient.SendTextMessageAsync(message.Chat.Id, "Чтобы что-то удалить надо сначала это что-то сохранить");
+            _noteRepository.DeleteNote(message.From.Id, int.Parse(message.Text));
+            _userRepository.UpdateUser(message.From.Id, UserState.Command);
+            return botClient.SendTextMessageAsync(message.Chat.Id, "Заметка удалена");
         }
     }
 }

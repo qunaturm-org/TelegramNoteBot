@@ -23,9 +23,10 @@ namespace TelegramNoteBot
             IMongoCollection<User> usersCollection = database.GetCollection<User>("Users");
             INoteRepository noteRepository = new NoteRepository(notesCollection);
             IUserRepository userRepository = new UserRepository(usersCollection);
+            ICallbackProcessing callbackProcessing = new CallbackProcessing(userRepository, noteRepository);
             IMessageProcessing messageProcessing = new MessageProcessing(noteRepository, userRepository);
 
-            var handlers = new TelegramLogicHandlers(userRepository, messageProcessing);
+            var handlers = new TelegramLogicHandlers(userRepository, messageProcessing, callbackProcessing);
             client.StartReceiving(new DefaultUpdateHandler(handlers.HandleUpdateAsync, handlers.HandleErrorAsync),
                    cts.Token);
 
