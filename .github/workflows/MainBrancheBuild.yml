@@ -1,4 +1,4 @@
-name: .NET
+name: Main branche build
 
 on:
   push:
