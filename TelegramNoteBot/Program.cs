@@ -4,34 +4,37 @@ using Telegram.Bot.Extensions.Polling;
 using System.Threading;
 using System;
 using TelegramNoteBot.Handlers;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace TelegramNoteBot
 {
     class Program
     {
-        private static string token { get; set; } = "1909541944:AAEVkpxs19CMI3WCy5WT8ruYX6goLeETfNI";
-        private static TelegramBotClient client;
-
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            client = new TelegramBotClient(token);
-            using var cts = new CancellationTokenSource();
-
-            MongoClient dbClient = new MongoClient("mongodb+srv://karina:Ff224903@cluster0.gzdmw.mongodb.net/test");
-            IMongoDatabase database = dbClient.GetDatabase("TGBotDB");
-            IMongoCollection<Note> notesCollection = database.GetCollection<Note>("Notes");
-            IMongoCollection<User> usersCollection = database.GetCollection<User>("Users");
-            INoteRepository noteRepository = new NoteRepository(notesCollection);
-            IUserRepository userRepository = new UserRepository(usersCollection);
-            ICallbackProcessing callbackProcessing = new CallbackProcessing(userRepository, noteRepository);
-            IMessageProcessing messageProcessing = new MessageProcessing(noteRepository, userRepository);
-
-            var handlers = new TelegramLogicHandlers(userRepository, messageProcessing, callbackProcessing);
-            client.StartReceiving(new DefaultUpdateHandler(handlers.HandleUpdateAsync, handlers.HandleErrorAsync),
-                   cts.Token);
-
-            Console.ReadLine();
-            cts.Cancel();
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .AddCommandLine(args)
+                .Build();
+            return CreateHostBuilder(args, configuration).Build().RunAsync();
         }
+        static IHostBuilder CreateHostBuilder(string[] args, IConfiguration configuration) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureServices((_, services) =>
+                    services
+                            .AddHostedService<TelegramBotWorker>()
+                            .AddSingleton<TelegramBotClient>()
+                            .AddSingleton<MongoClient>()
+                            .AddSingleton<IMongoDatabase>()
+                            .AddSingleton<IMongoCollection<Note>>()
+                            .AddSingleton<IMongoCollection<User>>()
+                            .AddSingleton<INoteRepository, NoteRepository>()
+                            .AddSingleton<IUserRepository, UserRepository>()
+                            .AddSingleton<ICallbackProcessing>()
+                            .AddSingleton<IMessageProcessing>());
     }
 }
