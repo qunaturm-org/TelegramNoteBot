@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using TelegramNoteBot.Models;
 
-namespace TelegramNoteBot
+namespace TelegramNoteBot.Interfaces.RepositoriesS
 {
     public interface IUserRepository
     {

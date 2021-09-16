@@ -1,9 +1,10 @@
-﻿namespace TelegramNoteBot
+﻿namespace TelegramNoteBot.Models
 {
     public enum UserState
     {
         Command,
         AddNote,
-        DeleteNote
+        DeleteNote,
+        AddNotification
     }
 }

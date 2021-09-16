@@ -3,6 +3,10 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using TelegramNoteBot.Interfaces.Handlers;
+using TelegramNoteBot.Interfaces.Repositories;
+using TelegramNoteBot.Interfaces.RepositoriesS;
+using TelegramNoteBot.Models;
 
 namespace TelegramNoteBot.Handlers
 {
@@ -10,6 +14,7 @@ namespace TelegramNoteBot.Handlers
     {
         private readonly IUserRepository _userRepository;
         private readonly INoteRepository _noteRepository;
+        //private readonly 
         public CallbackProcessing(IUserRepository userRepository, INoteRepository noteRepository)
         {
             _userRepository = userRepository;
@@ -48,7 +53,7 @@ namespace TelegramNoteBot.Handlers
         }
         public async Task Processing(ITelegramBotClient botClient, CallbackQuery callbackQuery)
         {
-            User user = _userRepository.GetUser(callbackQuery.Message.From.Id);
+            Models.User user = _userRepository.GetUser(callbackQuery.Message.From.Id);
             var action = (callbackQuery.Data) switch
             {
                 "functionsCallback" => TellMeAboutFunctional(botClient, callbackQuery.Message),

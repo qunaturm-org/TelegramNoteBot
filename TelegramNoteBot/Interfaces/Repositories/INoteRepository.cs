@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using TelegramNoteBot.Models;
 
-namespace TelegramNoteBot
+namespace TelegramNoteBot.Interfaces.Repositories
 {
     public interface INoteRepository
     {

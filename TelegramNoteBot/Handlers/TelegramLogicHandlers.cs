@@ -5,6 +5,8 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using TelegramNoteBot.Interfaces.Handlers;
+using TelegramNoteBot.Interfaces.RepositoriesS;
 
 namespace TelegramNoteBot.Handlers
 {

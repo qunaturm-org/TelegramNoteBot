@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Telegram.Bot;
 
-namespace TelegramNoteBot.Handlers
+namespace TelegramNoteBot.Interfaces.Handlers
 {
     public interface IMessageProcessing
     {

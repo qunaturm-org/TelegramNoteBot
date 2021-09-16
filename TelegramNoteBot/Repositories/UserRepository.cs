@@ -1,7 +1,9 @@
 ﻿using MongoDB.Driver;
 using System.Linq;
+using TelegramNoteBot.Interfaces.RepositoriesS;
+using TelegramNoteBot.Models;
 
-namespace TelegramNoteBot
+namespace TelegramNoteBot.Repositories
 {
     public class UserRepository : IUserRepository
     {

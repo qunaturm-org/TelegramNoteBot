@@ -5,6 +5,10 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using TelegramNoteBot.Interfaces.Handlers;
+using TelegramNoteBot.Interfaces.Repositories;
+using TelegramNoteBot.Interfaces.RepositoriesS;
+using TelegramNoteBot.Models;
 
 namespace TelegramNoteBot.Handlers
 {
@@ -24,7 +28,7 @@ namespace TelegramNoteBot.Handlers
             if (message.Type != MessageType.Text)
                 return;
 
-            User user = _userRepository.GetUser(message.From.Id);
+            Models.User user = _userRepository.GetUser(message.From.Id);
             if (user == null)
             {
                 _userRepository.AddUser(message.From.Id);
@@ -59,7 +63,12 @@ namespace TelegramNoteBot.Handlers
         }
         public Task<Message> AddNoteProcessing(ITelegramBotClient botClient, Message message)
         {
-            Note note = new Note(message.From.Id, message.MessageId, message.Text, false);
+            Note note = new Note
+            {
+                UserId = message.From.Id,
+                NoteId = message.MessageId,
+                Text = message.Text
+            };
             _noteRepository.AddNewNote(note);
             _userRepository.UpdateUser(message.From.Id, UserState.Command);
             return botClient.SendTextMessageAsync(message.Chat.Id, "Заметка создана");

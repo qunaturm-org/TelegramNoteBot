@@ -2,7 +2,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace TelegramNoteBot.Handlers
+namespace TelegramNoteBot.Interfaces.Handlers
 {
     public interface ICallbackProcessing
     {
