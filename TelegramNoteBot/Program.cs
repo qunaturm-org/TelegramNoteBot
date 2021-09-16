@@ -1,13 +1,10 @@
-﻿using Telegram.Bot;
-using MongoDB.Driver;
-using Telegram.Bot.Extensions.Polling;
-using System.Threading;
-using System;
+﻿using MongoDB.Driver;
 using TelegramNoteBot.Handlers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Telegram.Bot;
 
 namespace TelegramNoteBot
 {
@@ -27,14 +24,16 @@ namespace TelegramNoteBot
                 .ConfigureServices((_, services) =>
                     services
                             .AddHostedService<TelegramBotWorker>()
-                            .AddSingleton<TelegramBotClient>()
-                            .AddSingleton<MongoClient>()
-                            .AddSingleton<IMongoDatabase>()
-                            .AddSingleton<IMongoCollection<Note>>()
-                            .AddSingleton<IMongoCollection<User>>()
-                            .AddSingleton<INoteRepository, NoteRepository>()
+                            .AddSingleton<IConfiguration>(configuration)
+                            .AddSingleton<TelegramLogicHandlers>()
+                            .AddSingleton<ICallbackProcessing, CallbackProcessing>()
+                            .AddSingleton<IMessageProcessing, MessageProcessing>()
                             .AddSingleton<IUserRepository, UserRepository>()
-                            .AddSingleton<ICallbackProcessing>()
-                            .AddSingleton<IMessageProcessing>());
+                            .AddSingleton<INoteRepository, NoteRepository>()
+                            .AddSingleton<ITelegramBotClient>(x => new TelegramBotClient(x.GetService<IConfiguration>().GetValue<string>("BotToken")))
+                            .AddSingleton<IMongoClient, MongoClient>(x => new MongoClient(x.GetService<IConfiguration>().GetValue<string>("MongoDbConnectionString")))
+                            .AddSingleton<IMongoDatabase>(x => x.GetService<IMongoClient>().GetDatabase("TGBotDB"))
+                            .AddSingleton<IMongoCollection<User>>(x => x.GetService<IMongoDatabase>().GetCollection<User>("Users"))
+                            .AddSingleton<IMongoCollection<Note>>(x => x.GetService<IMongoDatabase>().GetCollection<Note>("Notes")));
     }
 }

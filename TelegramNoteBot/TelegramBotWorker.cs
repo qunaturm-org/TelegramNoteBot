@@ -11,23 +11,18 @@ namespace TelegramNoteBot
     {
         private readonly Handlers.TelegramLogicHandlers _handlers;
         private readonly IConfiguration _configuration;
-        private readonly string BotToken;
+        private readonly ITelegramBotClient _telegramBotClient;
 
-    public TelegramBotWorker(Handlers.TelegramLogicHandlers handlers, IConfiguration configuration)
+    public TelegramBotWorker(Handlers.TelegramLogicHandlers handlers, IConfiguration configuration, ITelegramBotClient telegramBotClient)
         {
             _handlers = handlers;
-            BotToken = _configuration.GetValue<string>("BotToken");
             _configuration = configuration;
+            _telegramBotClient = telegramBotClient;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                TelegramBotClient _client = new TelegramBotClient(BotToken);
-                _client.StartReceiving(new DefaultUpdateHandler(_handlers.HandleUpdateAsync, _handlers.HandleErrorAsync),
-                   stoppingToken);
-                await Task.Delay(100, stoppingToken);
-            }
+            _telegramBotClient.StartReceiving(new DefaultUpdateHandler(_handlers.HandleUpdateAsync, _handlers.HandleErrorAsync),
+                      stoppingToken);
         }
     }
 }
