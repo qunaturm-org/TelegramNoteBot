@@ -64,5 +64,20 @@ namespace TelegramNoteBot.Handlers
 
             await action;
         }
+
+        public Task CreateNewNotification(ITelegramBotClient botClient, Message message)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<Message> GetAllNotifocations(ITelegramBotClient botClient, Message message)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<Message> DeleteNotofocation(ITelegramBotClient botClient, Message message)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

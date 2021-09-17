@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -54,6 +55,11 @@ namespace TelegramNoteBot.Handlers
                         action = (message.Text.Split(' ').First()) switch
                         {
                             "/inline" => SendInlineKeyboard(botClient, message),
+                            "Обзор функций" => SendInlineKeyboard(botClient, message),
+                            "/note" => SendNoteKeyboard(botClient, message),
+                            "Заметки" => SendNoteKeyboard(botClient, message),
+                            "/notification" => SendNotificationKeyboard(botClient, message),
+                            "Уведомления" => SendNotificationKeyboard(botClient, message),
                             _ => Usage(botClient, message)
                         };
                         break;
@@ -78,19 +84,67 @@ namespace TelegramNoteBot.Handlers
         {
             await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
 
+            var replyKeyboardMarkup = new ReplyKeyboardMarkup()
+            {
+                Keyboard = new List<List<KeyboardButton>>
+                {
+                    new List<KeyboardButton>{ new KeyboardButton { Text = "Обзор функций"}, new KeyboardButton { Text = "Заметки"}, new KeyboardButton { Text = "Уведомления" } }
+                },
+                OneTimeKeyboard = false
+            };
+
+
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                                                        text: "Выберите:",
+                                                        replyMarkup: replyKeyboardMarkup);
+        }
+        public async Task<Message> SendNoteKeyboard(ITelegramBotClient botClient, Message message)
+        {
+            await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+
             var inlineKeyboard = new InlineKeyboardMarkup(new[]
             {
                         new []
                         {
-                            InlineKeyboardButton.WithCallbackData("Обзор функций", "functionsCallback"),
                             InlineKeyboardButton.WithCallbackData("Создать заметку", "createNotesCallback"),
 
-                    },
+                        },
                         new []
                         {
                             InlineKeyboardButton.WithCallbackData("Мои заметки", "showNotesCallback"),
-                            InlineKeyboardButton.WithCallbackData("Удалить заметку", "deteteNote")
                         },
+                        new []
+                        {
+                            InlineKeyboardButton.WithCallbackData("Удалить заметку", "deteteNote")
+                        }
+                })
+            {
+                
+            };
+
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                                                        text: "Выберите:",
+                                                        replyMarkup: inlineKeyboard);
+        }
+
+        public async Task<Message> SendNotificationKeyboard(ITelegramBotClient botClient, Message message)
+        {
+            await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+
+            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            {
+                        new []
+                        {
+                            InlineKeyboardButton.WithCallbackData("Создать напоминание", "createNotificationCallback")
+                        },
+                        new []
+                        {
+                            InlineKeyboardButton.WithCallbackData("Мои напоминания", "showNotificationCallback")
+                        },
+                        new []
+                        {
+                            InlineKeyboardButton.WithCallbackData("Удалить напоминание", "deleteNotificationCallback")
+                        }
                 });
 
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
@@ -101,7 +155,9 @@ namespace TelegramNoteBot.Handlers
         public async Task<Message> Usage(ITelegramBotClient botClient, Message message)
         {
             const string usage = "Usage:\n" +
-                                 "/inline   - send inline keyboard\n";
+                                 "/inline   - send inline keyboard\n" +
+                                 "/note - send note keyboard\n" +
+                                 "/notification - send notification keyboard";
 
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                                                         text: usage,

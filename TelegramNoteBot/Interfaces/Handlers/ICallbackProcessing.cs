@@ -11,5 +11,8 @@ namespace TelegramNoteBot.Interfaces.Handlers
         Task Processing(ITelegramBotClient botClient, CallbackQuery callbackQuery);
         Task<Message> TellMeAboutFunctional(ITelegramBotClient botClient, Message message);
         Task CreateNewNote(ITelegramBotClient botClient, Message message);
+        Task CreateNewNotification(ITelegramBotClient botClient, Message message);
+        Task<Message> GetAllNotifocations(ITelegramBotClient botClient, Message message);
+        Task<Message> DeleteNotofocation(ITelegramBotClient botClient, Message message);
     }
 }
